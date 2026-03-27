@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+:root {
+    --sidebar-bg: #181818;
+    --button-bg: #FFFFFF0D;
+    --text-bg: #FFFFFF99;
+    --add-bg: #FFFFFF;
+    --Personal-bg: #1C1C1C;
+    --Personal-text: #FFFFFF;
+    --box-bg: #FFFFFF08;
+    --error-bg: red;
+    --isActive-bg: #FFFFFF;
+    --bg-Active: #FFFFFF08;
+    --bg-mid: #FFFFFF08;
+    --date-bg: #FFFFFF66;
+    --content-bg : #FFFFFF99;
+    --note-a-bg : #FFFFFF1A;
+    --menu-bg : #333333;
+
+    --font-primary: "Source Sans Pro", sans-serif;
+    --font-semibold: 600;
+
+}
