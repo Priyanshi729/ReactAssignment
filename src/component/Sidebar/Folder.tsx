@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Folder as FolderIcon, FolderPlus, FolderOpen } from "lucide-react";
+import {
+  Folder as FolderIcon,
+  FolderPlus,
+  FolderOpen,
+  Trash as TrashIcon,
+} from "lucide-react";
 import { useApp } from "../../Context/useApp";
-import { getFolders, createFolder as apiCreateFolder } from "../../Api/Api";
+import {
+  getFolders,
+  createFolder as apiCreateFolder,
+  deleteFolder,
+} from "../../Api/Api";
 import { useNavigate } from "react-router";
 
 const Folder: React.FC = () => {
@@ -12,8 +21,7 @@ const Folder: React.FC = () => {
     setSelectedFolder,
     setSelectedNoteId,
     setRefreshNotes,
-    setActiveView
-    
+    setActiveView,
   } = useApp();
 
   const [showInput, setShowInput] = useState(false);
@@ -22,7 +30,6 @@ const Folder: React.FC = () => {
   const safeFolders = Array.isArray(folders) ? folders : [];
   const navigate = useNavigate();
 
-  
   useEffect(() => {
     const fetchFolders = async () => {
       try {
@@ -30,7 +37,6 @@ const Folder: React.FC = () => {
         const data = res?.data?.folders ?? res?.data ?? [];
         const foldersArray = Array.isArray(data) ? data : [];
 
-     
         const normalized = foldersArray.map((f) => ({
           id: String(f.id),
           name: f.name,
@@ -57,24 +63,36 @@ const Folder: React.FC = () => {
       const res = await apiCreateFolder(newFolderName);
       const rawFolder = res?.data?.folder || res?.data;
 
-  
       const newFolder = {
         id: String(rawFolder?.id ?? Date.now()),
         name: rawFolder?.name ?? newFolderName,
       };
 
-     
       setFolders((prev) => [newFolder, ...(prev || [])]);
 
-    
-      setSelectedFolder({id: newFolder.id,name : newFolder.name});
+      setSelectedFolder({
+        id: newFolder.id,
+        name: newFolder.name,
+      });
 
-   
       setSelectedNoteId(null);
       setRefreshNotes((prev) => !prev);
 
       setNewFolderName("");
       setShowInput(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteFolder = async (id: string) => {
+    try {
+      await deleteFolder(id);
+      setFolders((prev) => prev.filter((f) => String(f.id) !== String(id)));
+      setSelectedFolder(null);
+      setSelectedNoteId(null);
+      setRefreshNotes((prev) => !prev);
+      navigate("/");
     } catch (err) {
       console.error(err);
     }
@@ -108,46 +126,57 @@ const Folder: React.FC = () => {
       )}
 
       {safeFolders.map((item) => {
-        const isActive =
-          String(selectedFolder?.id) === String(item.id);
-
+        const isActive = String(selectedFolder?.id) === String(item.id);
         const Icon = isActive ? FolderOpen : FolderIcon;
 
         return (
           <div
             key={item.id}
-            onClick={() =>{
-              setSelectedFolder({
-                id: String(item.id),
-                name: item.name,
-              });
-            setActiveView(null);
-            setSelectedNoteId(null);
-            navigate(`/folder/${item.id}`)
-          }
-            }
-            className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition ${
+            className={`flex items-center justify-between px-3 py-2 cursor-pointer transition ${
               isActive
                 ? "text-(--isActive-bg) bg-(--bg-Active)"
                 : "text-(--text-bg)"
             }`}
           >
-            <Icon
-              className={`w-5 h-5 ${
-                isActive
-                  ? "text-(--isActive-bg)"
-                  : "text-(--text-bg)"
-              }`}
-            />
-            <p
-              className={`text-base font-semibold ${
-                isActive
-                  ? "text-(--isActive-bg)"
-                  : "text-(--text-bg)"
-              }`}
+            <div
+              onClick={() => {
+                setSelectedFolder({
+                  id: String(item.id),
+                  name: item.name,
+                });
+                setActiveView(null);
+                setSelectedNoteId(null);
+                navigate(`/folder/${item.id}`);
+              }}
+              className="flex items-center gap-3 w-full"
             >
-              {item.name}
-            </p>
+              <Icon
+                className={`w-5 h-5 ${
+                  isActive
+                    ? "text-(--isActive-bg)"
+                    : "text-(--text-bg)"
+                }`}
+              />
+              <p
+                className={`text-base font-semibold ${
+                  isActive
+                    ? "text-(--isActive-bg)"
+                    : "text-(--text-bg)"
+                }`}
+              >
+                {item.name}
+              </p>
+            </div>
+
+            {isActive && (
+              <TrashIcon
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteFolder(item.id);
+                }}
+                className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              />
+            )}
           </div>
         );
       })}

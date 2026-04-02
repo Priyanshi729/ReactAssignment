@@ -4,24 +4,24 @@ import type { GetNotes } from "../component/types/Types"
 export const api=axios.create({
     baseURL:"https://nowted-server.remotestate.com"
 })
-export const getRecent=()=>{
-    return api.get('/notes/recent')
+export const getRecent=async()=>{
+    return await api.get('/notes/recent')
 }
 
-export const getFolders=()=>{
-    return api.get('/folders')
+export const getFolders=  async()=>{
+    return await api.get('/folders')
 }
 
 export const createFolder=(name:string)=>{
     return api.post('/folders',{name})
 }
 
-export const getNotes = (params: GetNotes) => {
-  return api.get("/notes", { params });
+export const getNotes = async (params: GetNotes) => {
+  return await api.get("/notes", { params });
 };
 
-export const getNotesData = (NotesId: string) => {
-  return api.get(`/notes/${NotesId}`);
+export const getNotesData = async (NotesId: string) => {
+  return await api.get(`/notes/${NotesId}`);
 };
 
 export const createNote = (data: {
@@ -32,11 +32,11 @@ export const createNote = (data: {
   return api.post("/notes", data);
 };
 
-export const updateNote = (
+export const updateNote = async(
   id: string,
   data: { isFavorite?: boolean; isArchived?: boolean },
 ) => {
-  return api.patch(`/notes/${id}`, data);
+  return await api.patch(`/notes/${id}`, data);
 };
 
 export const deleteNote = async(id: string) => {
@@ -47,3 +47,7 @@ export const deleteNote = async(id: string) => {
 export const restoreNote = async(id: string) => {
   return await api.post(`/notes/${id}/restore`);
 };
+
+export const deleteFolder =  async(id:string)=>{
+  return await api.delete(`/folders/${id}`)
+}

@@ -6,7 +6,7 @@ import {
   Star,
   Trash,
 } from 'lucide-react';
-import { useEffect, useState ,useRef} from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { FullNote } from '../types/Types';
 import { getNotesData, updateNote, restoreNote, deleteNote } from '../../Api/Api';
 import { useApp } from '../../Context/useApp';

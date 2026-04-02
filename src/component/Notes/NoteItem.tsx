@@ -84,7 +84,7 @@ const NoteItem: React.FC = () => {
   }, [selectedFolder?.id, activeView, refreshNotes]);
 
   return (
-    <div className="w-89 h-screen bg-(--middle-bg) px-4 pt-7 pb-4 ">
+    <div className="w-89 h-screen overflow-y-auto  overflow-x-hidden bg-(--middle-bg) px-4 pt-7 pb-4 ">
       <p className="text-lg font-semibold text-(--isActive-bg) pt-2 py-6">
         {getTitle()}
       </p>
