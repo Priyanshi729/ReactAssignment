@@ -13,8 +13,8 @@ const SideLayout: React.FC = () => {
 
 
     return (
-        <div className='w-full h-screen flex bg-(--sidebar-bg) pt-7 overflow-hidden '>
-            <div className='flex flex-col gap-8 w-80 h-screen overflow-y-auto'>
+        <div className='w-full h-screen flex bg-(--sidebar-bg)  overflow-hidden '>
+            <div className='flex flex-col gap-8 w-80 h-screen  pt-7 '>
                 <Header />
                 <AddNote />
                 <Recents />

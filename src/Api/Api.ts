@@ -1,58 +1,49 @@
-import axios from "axios";
-import type { Note } from "../Context/AppContext";
+import axios from "axios"
+import type { GetNotes } from "../component/types/Types"
 
-
-
-const API = axios.create({
-  baseURL: "https://nowted-server.remotestate.com",
-});
-
-//For Folders
-export const getFolders = async () => {
-  const res = await API.get("/folders");
-  return res.data.folders;
+export const api=axios.create({
+    baseURL:"https://nowted-server.remotestate.com"
+})
+export const getRecent=()=>{
+    return api.get('/notes/recent')
 }
 
-//Notes for Folder
-export const getNotes = async (folderId: string) => {
-  const res = await API.get(`notes?folderId=${folderId}`)
-  return res.data.notes;
+export const getFolders=()=>{
+    return api.get('/folders')
 }
 
-//Recents
-export const getRecents = async () => {
-  const res = await API.get("/notes/recent")
-  return res.data.recentNotes
+export const createFolder=(name:string)=>{
+    return api.post('/folders',{name})
 }
 
-//for updating note title
-export const updateNoteTitle = async (id: string, title: string) => {
-  const res = await API.patch(`/notes/${id}`, { title });
-  return res.data;
+export const getNotes = (params: GetNotes) => {
+  return api.get("/notes", { params });
 };
 
-//To create new folder
-export const createNewFolder = async (name: string) => {
-  const res = await API.post("/folders", { name });
-  return res.data.folders;
-}
+export const getNotesData = (NotesId: string) => {
+  return api.get(`/notes/${NotesId}`);
+};
 
-export const getNotesDetail = async (noteId: string) => {
-  const res = await API.get(`/notes/${noteId}`)
-  return res.data.note;
-}
+export const createNote = (data: {
+  title: string;
+  content: string;
+  folderId: string;
+}) => {
+  return api.post("/notes", data);
+};
 
-export const createNote = async (
-  data: {
-    folderId: string;
-    title: string;
-    content: string;
-  }
-): Promise<Note> => {
-  const res = await API.post<Note>("/notes", data);
-  return res.data;
+export const updateNote = (
+  id: string,
+  data: { isFavorite?: boolean; isArchived?: boolean },
+) => {
+  return api.patch(`/notes/${id}`, data);
+};
+
+export const deleteNote = async(id: string) => {
+  return await api.delete(`/notes/${id}`);
 };
 
 
-export default API;
-
+export const restoreNote = async(id: string) => {
+  return await api.post(`/notes/${id}/restore`);
+};

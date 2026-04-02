@@ -1,47 +1,32 @@
-import  { createContext } from 'react'
-
-
-
-export type Folder = {
-    id: string;
-    name: string;
-}
-
-export type Note = {
-    id : string;
-    title : string;
-    createdAt : string;
-    preview : string;
-    content : string;
-    folderId : string;
-    folderName : string;
-    
-}
+import { createContext } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import type { folder } from "../component/types/Types";
 
 export type AppContextType = {
-    folders: Folder[];
-    loading: boolean;
-    error: string;
+  selectedFolder: folder | null;
+  setSelectedFolder: (folder: folder | null) => void;
 
-    activeFolderId: string | null;
-    activeFolderName: string;
-    setActiveFolder: (id: string, name: string) => void;
-    createFolder : (name : string) => Promise<void>;
+  selectedNoteId: string | null;
+  setSelectedNoteId: (id: string | null) => void;
 
-    folderNotes : Note[];
-    recentNotes : Note[];
-    setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
-    loadingNotes : boolean;
-    errorNotes : string ; 
+  activeNoteMode: "view" | "create";
+  setActiveNoteMode: (mode: "view" | "create") => void;
 
-    
+  refreshNotes: boolean;
+  setRefreshNotes: Dispatch<SetStateAction<boolean>>;
 
-    activeNoteId: string | null;
-    setActiveNoteId: (id: string | null) => void;
+  activeView: "all"| "favorites" | "archived" | "trash" | null;
+  setActiveView: (view:  "favorites" | "archived" | "trash" | null) => void;
 
-    
-}
+  folders: folder[];
+  setFolders: Dispatch<SetStateAction<folder[]>>;
+
+  showNewNoteForm: boolean;
+  setShowNewNoteForm: (val: boolean) => void;
+
+  searchOpen: boolean;
+  setSearchOpen: Dispatch<SetStateAction<boolean>>;
+};
+
 
 export const AppContext = createContext<AppContextType | null>(null);
-
-

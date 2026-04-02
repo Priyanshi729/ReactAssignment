@@ -26,8 +26,43 @@
     --content-bg : #FFFFFF99;
     --note-a-bg : #FFFFFF1A;
     --menu-bg : #333333;
+    --hover-bg : #FFFFFF99;
+    --submit-bg:blue;
+    --middle-bg:#1C1C1C;
+    --text-re:#FFFFFF;
+    --plus-hover:white;
+    --search-bg:white;
 
     --font-primary: "Source Sans Pro", sans-serif;
     --font-semibold: 600;
 
 }
+
+[data-theme="light"] {
+    
+    --sidebar-bg: #f4f0eb;      
+    --button-bg:#ecc398;     
+    --text-bg: #5d5353dd;      
+    --add-bg:  #000000;          
+    --Personal-bg: #2E2E2E;     
+    --Personal-text: #514949;
+    --box-bg: #FFFFFF1F;       
+    --error-bg: #FF4C4C;       
+    --isActive-bg: #000000;
+    --bg-Active:#e7ceb4  ;    
+    --bg-mid:#f2c59d;        
+    --date-bg:#4B2E2B;       
+    --content-bg:#9f6c65;    
+    --note-a-bg: #e7ceb4 ;     
+    --menu-bg: #e7ceb4;  
+     --submit-bg:#f2c59d;  
+     --middle-bg: #f1e8dc; 
+     --text-re:black; 
+     --plus-hover:black;
+     --search-bg:black;
+
+    
+    --font-primary: "Source Sans Pro", sans-serif;
+    --font-semibold: 600;
+}
+
