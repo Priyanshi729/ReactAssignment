@@ -12,8 +12,8 @@ export const getFolders=  async()=>{
     return await api.get('/folders')
 }
 
-export const createFolder=(name:string)=>{
-    return api.post('/folders',{name})
+export const createFolder=async (name:string)=>{
+    return await api.post('/folders',{name})
 }
 
 export const getNotes = async (params: GetNotes) => {
@@ -24,12 +24,12 @@ export const getNotesData = async (NotesId: string) => {
   return await api.get(`/notes/${NotesId}`);
 };
 
-export const createNote = (data: {
+export const createNote = async (data: {
   title: string;
   content: string;
   folderId: string;
 }) => {
-  return api.post("/notes", data);
+  return await api.post("/notes", data);
 };
 
 export const updateNote = async(
