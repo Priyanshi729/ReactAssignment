@@ -61,7 +61,7 @@ const NotesDetail: React.FC = () => {
       setMode('view');
       setSelectedNoteId(noteId || null);
     }
-  }, [noteId, setSelectedNoteId]);
+  }, [noteId]);
 
   useEffect(() => {
     if (!selectedNoteId || mode === "create") return;
