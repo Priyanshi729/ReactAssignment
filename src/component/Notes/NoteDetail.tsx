@@ -225,7 +225,7 @@ const NotesDetail: React.FC = () => {
                 className="flex items-center gap-3 px-3 py-2 text-sm text-(--add-bg)"
               >
                 <Archive className="w-4 h-4" />
-                {showNote.isArchived ? 'UnArchive' : 'Archive'}
+                {showNote.isArchived ? 'UnArchived' : 'Archived'}
               </button>
               <hr className="border-(--button-bg)" />
               <button

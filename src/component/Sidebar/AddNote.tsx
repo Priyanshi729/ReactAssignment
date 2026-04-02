@@ -17,7 +17,6 @@ const AddNote: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     const handleAddNote = () => {
-        setSelectedNoteId("new");   
         navigate("/note/new"); 
     };
 
