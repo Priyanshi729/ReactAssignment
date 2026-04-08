@@ -4,12 +4,14 @@ import {
   FolderPlus,
   FolderOpen,
   Trash as TrashIcon,
+  Pencil,
 } from "lucide-react";
 import { useApp } from "../../Context/useApp";
 import {
   getFolders,
   createFolder as apiCreateFolder,
   deleteFolder,
+  updateFolder,
 } from "../../Api/Api";
 import { useNavigate } from "react-router";
 
@@ -27,6 +29,9 @@ const Folder: React.FC = () => {
 
   const [showInput, setShowInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editedName, setEditedName] = useState("");
 
   const safeFolders = Array.isArray(folders) ? folders : [];
   const navigate = useNavigate();
@@ -102,6 +107,32 @@ const Folder: React.FC = () => {
     }
   };
 
+  const handleUpdateFolder = async (id: string) => {
+  if (!editedName.trim()) return;
+
+  try {
+    await updateFolder(id, { name: editedName });
+
+    setFolders((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, name: editedName } : f
+      )
+    );
+
+    if (selectedFolder?.id === id) {
+      setSelectedFolder({
+        ...selectedFolder,
+        name: editedName,
+      });
+    }
+
+    setEditingFolderId(null);
+    setEditedName("");
+  } catch (err) {
+    console.error(err);
+  }
+};
+
   return (
     <div className="w-80 h-64 pl-3 pr-6 overflow-y-auto">
       <div className="flex items-center justify-between mb-3 sticky top-0 bg-(--sidebar-bg) z-10">
@@ -146,6 +177,7 @@ const Folder: React.FC = () => {
           >
             <div
               onClick={() => {
+                if (editingFolderId) return;
                 setSelectedFolder({
                   id: String(item.id),
                   name: item.name,
@@ -163,25 +195,51 @@ const Folder: React.FC = () => {
                     : "text-(--text-bg)"
                 }`}
               />
-              <p
-                className={`text-base font-semibold ${
-                  isActive
-                    ? "text-(--isActive-bg)"
-                    : "text-(--text-bg)"
-                }`}
-              >
-                {item.name}
-              </p>
+
+              {editingFolderId === item.id ? (
+                <input
+                  autoFocus
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onBlur={() => handleUpdateFolder(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleUpdateFolder(item.id);
+                    if (e.key === "Escape") setEditingFolderId(null);
+                  }}
+                  className="text-base px-1 bg-(--bg-mid) outline-none"
+                />
+              ) : (
+                <p
+                  className={`text-base font-semibold ${
+                    isActive
+                      ? "text-(--isActive-bg)"
+                      : "text-(--text-bg)"
+                  }`}
+                >
+                  {item.name}
+                </p>
+              )}
             </div>
 
             {isActive && (
-              <TrashIcon
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteFolder(item.id);
-                }}
-                className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
-              />
+              <div className="flex items-center gap-2">
+                <Pencil
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingFolderId(item.id);
+                    setEditedName(item.name);
+                  }}
+                  className="w-4 h-4 cursor-pointer text-(--text-bg) hover:text-(--isActive-bg)"
+                />
+
+                <TrashIcon
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteFolder(item.id);
+                  }}
+                  className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+                />
+              </div>
             )}
           </div>
         );

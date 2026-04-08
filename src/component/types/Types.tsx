@@ -37,7 +37,6 @@ export type folder = {
 };
 
 
-
 export type deletedNote = "true" | "false";
 
 export type GetNotes = {

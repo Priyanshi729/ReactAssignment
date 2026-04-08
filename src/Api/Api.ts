@@ -53,8 +53,13 @@ export const deleteFolder =  async(id:string)=>{
 }
 
 
+export const updateFolder = async (id: string, data: { name: string }) => {
+  return await api.patch(`/folders/${id}`, data);
+};
+
 export const restoreFolder = async (id: string) => {
   return await api.post(`/folders/${id}/restore`);
 };
+
 
 
