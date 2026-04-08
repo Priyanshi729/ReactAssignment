@@ -29,7 +29,6 @@ const Folder: React.FC = () => {
 
   const [showInput, setShowInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editedName, setEditedName] = useState("");
 
@@ -51,7 +50,7 @@ const Folder: React.FC = () => {
 
         setFolders(normalized);
 
-        if (normalized.length > 0 && !selectedFolder) {
+        if (normalized.length > 0 && !selectedFolder?.id) {
           setSelectedFolder(normalized[0]);
         }
       } catch (err) {
@@ -77,15 +76,9 @@ const Folder: React.FC = () => {
       };
 
       setFolders((prev) => [newFolder, ...(prev || [])]);
-
-      setSelectedFolder({
-        id: newFolder.id,
-        name: newFolder.name,
-      });
-
+      setSelectedFolder(newFolder);
       setSelectedNoteId(null);
-      setRefreshNotes((prev) => !prev);
-
+      navigate(`/folder/${newFolder.id}`);
       setNewFolderName("");
       setShowInput(false);
     } catch (err) {
@@ -96,11 +89,9 @@ const Folder: React.FC = () => {
   const handleDeleteFolder = async (id: string) => {
     try {
       await deleteFolder(id);
-
       setSelectedFolder(null);
       setSelectedNoteId(null);
       setRefreshNotes((prev) => !prev);
-
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -108,30 +99,25 @@ const Folder: React.FC = () => {
   };
 
   const handleUpdateFolder = async (id: string) => {
-  if (!editedName.trim()) return;
+    if (!editedName.trim()) return;
 
-  try {
-    await updateFolder(id, { name: editedName });
+    try {
+      await updateFolder(id, { name: editedName });
 
-    setFolders((prev) =>
-      prev.map((f) =>
-        f.id === id ? { ...f, name: editedName } : f
-      )
-    );
+      setFolders((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, name: editedName } : f))
+      );
 
-    if (selectedFolder?.id === id) {
-      setSelectedFolder({
-        ...selectedFolder,
-        name: editedName,
-      });
+      if (selectedFolder?.id === id) {
+        setSelectedFolder({ ...selectedFolder, name: editedName });
+      }
+
+      setEditingFolderId(null);
+      setEditedName("");
+    } catch (err) {
+      console.error(err);
     }
-
-    setEditingFolderId(null);
-    setEditedName("");
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   return (
     <div className="w-80 h-64 pl-3 pr-6 overflow-y-auto">
@@ -178,10 +164,7 @@ const Folder: React.FC = () => {
             <div
               onClick={() => {
                 if (editingFolderId) return;
-                setSelectedFolder({
-                  id: String(item.id),
-                  name: item.name,
-                });
+                setSelectedFolder({ id: String(item.id), name: item.name });
                 setActiveView(null);
                 setSelectedNoteId(null);
                 navigate(`/folder/${item.id}`);
@@ -190,9 +173,7 @@ const Folder: React.FC = () => {
             >
               <Icon
                 className={`w-5 h-5 ${
-                  isActive
-                    ? "text-(--isActive-bg)"
-                    : "text-(--text-bg)"
+                  isActive ? "text-(--isActive-bg)" : "text-(--text-bg)"
                 }`}
               />
 
@@ -211,9 +192,7 @@ const Folder: React.FC = () => {
               ) : (
                 <p
                   className={`text-base font-semibold ${
-                    isActive
-                      ? "text-(--isActive-bg)"
-                      : "text-(--text-bg)"
+                    isActive ? "text-(--isActive-bg)" : "text-(--text-bg)"
                   }`}
                 >
                   {item.name}
@@ -246,9 +225,7 @@ const Folder: React.FC = () => {
       })}
 
       {safeFolders.filter((f) => !f.deletedAt).length === 0 && (
-        <p className="text-(--text-bg) text-sm px-3">
-          No folders
-        </p>
+        <p className="text-(--text-bg) text-sm px-3">No folders</p>
       )}
     </div>
   );

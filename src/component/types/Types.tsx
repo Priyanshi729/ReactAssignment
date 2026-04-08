@@ -1,5 +1,3 @@
-import type { deleteFolder } from "../../Api/Api";
-
 export type Note = {
   id: string;
   title: string;
