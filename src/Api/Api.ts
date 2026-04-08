@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { GetNotes } from "../component/types/Types"
+import type {  GetNotes } from "../component/types/Types"
 
 export const api=axios.create({
     baseURL:"https://nowted-server.remotestate.com"
@@ -8,9 +8,9 @@ export const getRecent=async()=>{
     return await api.get('/notes/recent')
 }
 
-export const getFolders=  async()=>{
-    return await api.get('/folders')
-}
+export const getFolders = async (params?: { deleted?: "true" | "false" }) => {
+  return await api.get('/folders', { params });
+};
 
 export const createFolder=async (name:string)=>{
     return await api.post('/folders',{name})
@@ -51,3 +51,10 @@ export const restoreNote = async(id: string) => {
 export const deleteFolder =  async(id:string)=>{
   return await api.delete(`/folders/${id}`)
 }
+
+
+export const restoreFolder = async (id: string) => {
+  return await api.post(`/folders/${id}/restore`);
+};
+
+

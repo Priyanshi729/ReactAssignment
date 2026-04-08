@@ -1,3 +1,5 @@
+import type { deleteFolder } from "../../Api/Api";
+
 export type Note = {
   id: string;
   title: string;
@@ -24,12 +26,17 @@ export type FullNote = {
   isFavorite: boolean;  
   isArchived?: boolean;
   deletedAt? : string | null;
+
+  folderDeletedAt?: string | null;
 };
 
 export type folder = {
   id: string;
   name: string;
+  deletedAt?: string | null;
 };
+
+
 
 export type deletedNote = "true" | "false";
 

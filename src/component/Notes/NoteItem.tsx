@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import type { Note } from "../types/Types";
 import { getNotes } from "../../Api/Api";
 import { formatDate, getPreview } from "../utilis/helper";
@@ -13,6 +13,13 @@ type NotesResponse = {
 const NoteItem: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const [hasMore, setHasMore] = useState(true);
+
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const {
     selectedFolder,
@@ -32,47 +39,49 @@ const NoteItem: React.FC = () => {
     return "Notes";
   };
 
+  const getParams = (pageNumber: number) => {
+    const params: any = {
+      page: pageNumber,
+      limit,
+    };
+
+    if (activeView === "favorites") params.favorite = true;
+    else if (activeView === "archived") params.archived = true;
+    else if (activeView === "trash") params.deleted = "true";
+    else if (selectedFolder?.id) params.folderId = selectedFolder.id;
+
+    return params;
+  };
+
+  
   useEffect(() => {
     const fetchNotes = async () => {
       try {
         setLoading(true);
         setNotes([]);
 
-        let res;
-
-        if (activeView === "favorites") {
-          res = await getNotes({ favorite: true, limit: 300 });
-        } else if (activeView === "archived") {
-          res = await getNotes({ archived: true, limit: 300 });
-        } else if (activeView === "trash") {
-          res = await getNotes({ deleted: "true", limit: 300 });
-        } else if (selectedFolder?.id) {
-          res = await getNotes({ folderId: selectedFolder.id, limit: 300 });
-        } else {
-          res = await getNotes({ limit: 300 });
-        }
+        const res = await getNotes(getParams(1));
 
         const raw: NotesResponse | Note[] = res?.data;
 
-        let data: Note[];
-
-        if (Array.isArray(raw)) {
-          data = raw;
-        } else {
-          data = raw?.notes ?? raw?.data ?? [];
-        }
-
+        const data = Array.isArray(raw)
+          ? raw
+          : raw?.notes ?? raw?.data ?? [];
 
         const safeData =
           activeView === "trash"
-            ? data.filter(note => note.deletedAt !== null)
-            : data.filter(note => note.deletedAt === null);
-        const updated = safeData.map((note) => ({
-          ...note,
-          preview: getPreview(note.preview),
+            ? data.filter(n => n.deletedAt !== null)
+            : data.filter(n => n.deletedAt === null);
+
+        const updated = safeData.map(n => ({
+          ...n,
+          preview: getPreview(n.preview),
         }));
 
         setNotes(updated);
+        setPage(1);
+        setHasMore(updated.length === limit);
+
       } catch {
         setNotes([]);
       } finally {
@@ -83,16 +92,76 @@ const NoteItem: React.FC = () => {
     fetchNotes();
   }, [selectedFolder?.id, activeView, refreshNotes]);
 
+  
+  const fetchNextPage = async () => {
+    if (loading || !hasMore) return;
+
+    try {
+      setLoading(true);
+
+      const nextPage = page + 1;
+
+      const res = await getNotes(getParams(nextPage));
+
+      const raw: NotesResponse | Note[] = res?.data;
+
+      const data = Array.isArray(raw)
+        ? raw
+        : raw?.notes ?? raw?.data ?? [];
+
+      const safeData =
+        activeView === "trash"
+          ? data.filter(n => n.deletedAt !== null)
+          : data.filter(n => n.deletedAt === null);
+
+      const updated = safeData.map(n => ({
+        ...n,
+        preview: getPreview(n.preview),
+      }));
+
+      setNotes(prev => [...prev, ...updated]);
+      setPage(nextPage);
+      setHasMore(updated.length === limit);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      {
+        root: containerRef.current, 
+        rootMargin: "100px",
+      }
+    );
+
+    const current = observerRef.current;
+    if (current) observer.observe(current);
+
+    return () => {
+      if (current) observer.unobserve(current);
+    };
+  }, [page, hasMore, loading]);
+
   return (
-    <div className="w-89 h-screen overflow-y-auto  overflow-x-hidden bg-(--middle-bg) px-4 pt-7 pb-4 ">
+    <div
+      ref={containerRef}
+      className="w-89 h-screen overflow-y-auto overflow-x-hidden bg-(--middle-bg) px-4 pt-7 pb-4"
+    >
       <p className="text-lg font-semibold text-(--isActive-bg) pt-2 py-6">
         {getTitle()}
       </p>
 
-      {loading && <p className="text-(--text-bg)">Loading...</p>}
-      {!loading && notes.length === 0 && (
-        <p className="text-(--text-bg)">No notes found</p>
-      )}
+      
 
       <div className="flex flex-col gap-4">
         {notes.map((note) => (
@@ -106,10 +175,11 @@ const NoteItem: React.FC = () => {
                 navigate(`/note/${note.id}`);
               }
             }}
-            className={`flex flex-col gap-2.5 p-4 rounded-lg cursor-pointer ${selectedNoteId === note.id
-              ? "bg-(--note-a-bg)"
-              : "bg-(--bg-mid)"
-              }`}
+            className={`flex flex-col gap-2.5 p-4 rounded-lg cursor-pointer ${
+              selectedNoteId === note.id
+                ? "bg-(--note-a-bg)"
+                : "bg-(--bg-mid)"
+            }`}
           >
             <p className="font-semibold text-lg text-(--isActive-bg)">
               {note.title}
@@ -125,6 +195,18 @@ const NoteItem: React.FC = () => {
           </div>
         ))}
       </div>
+
+     
+      {loading && (
+        <p className="text-(--text-bg) p-2">Loading more...</p>
+      )}
+
+      
+      <div ref={observerRef} className="h-10" />
+
+      {!hasMore && (
+        <p className="text-(--text-bg) p-2">No more notes</p>
+      )}
     </div>
   );
 };

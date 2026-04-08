@@ -9,13 +9,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [folders, setFolders] = useState<folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<folder | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<AppContextType["activeView"]>("all"); 
+  const [activeView, setActiveView] = useState<AppContextType["activeView"]>(null); 
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
   const [refreshNotes, setRefreshNotes] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeNoteMode, setActiveNoteMode] = useState<"view" | "create">("view");
 
-  // Fetch folders once
+
   useEffect(() => {
     const fetchFolders = async () => {
       try {
