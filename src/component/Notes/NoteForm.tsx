@@ -18,7 +18,7 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
 
   const currentDate = new Date().toLocaleDateString("en-GB");
 
-  const handleSubmit = async (e: React.ChangeEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedFolder?.id) {
