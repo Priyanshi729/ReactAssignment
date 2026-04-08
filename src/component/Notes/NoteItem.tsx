@@ -15,7 +15,7 @@ const NoteItem: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 15;
   const [hasMore, setHasMore] = useState(true);
 
   const observerRef = useRef<HTMLDivElement | null>(null);
