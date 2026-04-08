@@ -36,7 +36,7 @@ const NoteItem: React.FC = () => {
     if (activeView === "archived") return "Archived";
     if (activeView === "trash") return "Trash";
     if (selectedFolder) return selectedFolder.name;
-    return "Notes";
+    
   };
 
   const getParams = (pageNumber: number) => {
