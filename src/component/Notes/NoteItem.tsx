@@ -178,7 +178,7 @@ const NoteItem: React.FC = () => {
             className={`flex flex-col gap-2.5 p-4 rounded-lg cursor-pointer ${
               selectedNoteId === note.id
                 ? "bg-(--note-a-bg)"
-                : "bg-(--bg-mid)"
+                : "bg-(--bg-mid) hover:bg-(--hover-bg)"
             }`}
           >
             <p className="font-semibold text-lg text-(--isActive-bg)">

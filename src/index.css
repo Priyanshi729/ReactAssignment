@@ -26,7 +26,7 @@
     --content-bg : #FFFFFF99;
     --note-a-bg : #FFFFFF1A;
     --menu-bg : #333333;
-    --hover-bg : #FFFFFF99;
+    --hover-bg: #FFFFFF12;
     --submit-bg:blue;
     --middle-bg:#1C1C1C;
     --text-re:#FFFFFF;
@@ -60,6 +60,7 @@
      --text-re:black; 
      --plus-hover:black;
      --search-bg:black;
+     --hover-bg: #efd8c2;
 
     
     --font-primary: "Source Sans Pro", sans-serif;

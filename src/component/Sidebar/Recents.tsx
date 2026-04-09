@@ -97,7 +97,7 @@ const Recents: React.FC = () => {
                         className={`flex items-center gap-3.75 pt-2.5 pr-5 pb-2.5 cursor-pointer ${
                             isActive
                                 ? "bg-(--note-a-bg) text-(--isActive-bg)"
-                                : "text-(--text-bg)"
+                                : "text-(--text-bg) hover:bg-(--hover-bg)"
                         }`}
                     >
                         <FileText className="w-5 h-5 text(--text-bg)" />

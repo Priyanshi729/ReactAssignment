@@ -158,7 +158,7 @@ const Folder: React.FC = () => {
             className={`flex items-center justify-between px-3 py-2 cursor-pointer transition ${
               isActive
                 ? "text-(--isActive-bg) bg-(--bg-Active)"
-                : "text-(--text-bg)"
+                : "text-(--text-bg) hover:bg-(--hover-bg)"
             }`}
           >
             <div

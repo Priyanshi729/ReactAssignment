@@ -20,7 +20,7 @@ const More: React.FC = () => {
                 onClick={() => {setActiveView("favorites");
                                 navigate("/favorites")
                 }} 
-                className='flex gap-4 pt-4 cursor-pointer text-(--text-bg)'
+                className='flex gap-4 pt-4 cursor-pointer text-(--text-bg) hover:bg-(--hover-bg)'
             >
                 <Star className='h-5 w-5' />
                 <p className='text-(--text-bg) text-base'>Favorites</p>
@@ -30,7 +30,7 @@ const More: React.FC = () => {
                 onClick={() => {setActiveView("trash")
                                 navigate("/trash")
                 }}
-                className='flex gap-4 pt-4 cursor-pointer text-(--text-bg)'
+                className='flex gap-4 pt-4 cursor-pointer text-(--text-bg) hover:bg-(--hover-bg)'
             >
                 <TrashIcon className='h-5 w-5' />
                 <p className='text-(--text-bg) text-base'>Trash</p>
@@ -40,7 +40,7 @@ const More: React.FC = () => {
                 onClick={() => {setActiveView("archived")
                                 navigate("/archived")
                 }}
-                className='flex gap-4 pt-4 cursor-pointer text-(--text-bg)'
+                className='flex gap-4 pt-4 cursor-pointer  text-(--text-bg) hover:bg-(--hover-bg)'
             >
                 <Archive className='h-5 w-5' />
                 <p className='text-(--text-bg) text-base'>Archive</p>
