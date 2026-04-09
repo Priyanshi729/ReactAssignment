@@ -9,53 +9,66 @@ const AddNote: React.FC = () => {
         folders,
         setSelectedFolder,   
         setSearchOpen
-    } = useApp();
+    } = useApp()
 
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
-    const [query, setQuery] = useState("");
-    const wrapperRef = useRef<HTMLDivElement>(null);
+    const [query, setQuery] = useState("")
+    const [debouncedQuery, setDebouncedQuery] = useState("")
+    const wrapperRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedQuery(query)
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [query])
 
     const handleAddNote = () => {
-        navigate("/note/new"); 
-    };
+        navigate("/note/new") 
+    }
 
     const filteredFolders = folders.filter(folder =>
-        folder.name.toLowerCase().includes(query.toLowerCase())
-    );
+        folder.name.toLowerCase().includes(debouncedQuery.toLowerCase())
+    )
 
     const handleSelectFolder = (id: string, name: string) => {
-        setSelectedFolder({ id, name });  
-
-        setSelectedNoteId(null);   
-        navigate("/"); 
-        setSearchOpen(false);
-        setQuery("");
-    };
+        setSelectedFolder({ id, name })  
+        setSelectedNoteId(null)   
+        navigate("/") 
+        setSearchOpen(false)
+        setQuery("")
+        setDebouncedQuery("")
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             if (filteredFolders.length > 0) {
-                const f = filteredFolders[0];
-                handleSelectFolder(f.id, f.name);
+                const f = filteredFolders[0]
+                handleSelectFolder(f.id, f.name)
             } else {
-                setSearchOpen(false);
-                setQuery("");
+                setSearchOpen(false)
+                setQuery("")
+                setDebouncedQuery("")
             }
         }
-    };
+    }
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-                setSearchOpen(false);
-                setQuery("");
+                setSearchOpen(false)
+                setQuery("")
+                setDebouncedQuery("")
             }
-        };
+        }
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
+
+    const isTyping = query !== debouncedQuery
 
     return (
         <div className='pl-6' ref={wrapperRef}>
@@ -72,7 +85,9 @@ const AddNote: React.FC = () => {
 
                     {query && (
                         <div className="mt-2 bg-gray-800 rounded p-2 w-65 max-h-40 overflow-y-auto">
-                            {filteredFolders.length > 0 ? (
+                            {isTyping ? (
+                                <div className="p-2 text-gray-400">Searching...</div>
+                            ) : filteredFolders.length > 0 ? (
                                 filteredFolders.map(folder => (
                                     <div
                                         key={folder.id}
@@ -91,13 +106,13 @@ const AddNote: React.FC = () => {
             ) : (
                 <button
                     onClick={handleAddNote}
-                    className='h-10 w-65 bg-(--button-bg) rounded  text-center font-semibold text-(--add-bg) text-base'
+                    className='h-10 w-65 bg-(--button-bg) rounded text-center font-semibold text-(--add-bg) text-base'
                 >
                     + New Note
                 </button>
             )}
         </div>
-    );
-};
+    )
+}
 
-export default AddNote; 
+export default AddNote
