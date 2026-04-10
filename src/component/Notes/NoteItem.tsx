@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import type { Note } from "../types/Types";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import type { Note, NoteParam } from "../types/Types";
 import { getNotes } from "../../Api/Api";
 import { formatDate, getPreview } from "../utilis/helper";
 import { useApp } from "../../Context/useApp";
@@ -39,8 +39,8 @@ const NoteItem: React.FC = () => {
     
   };
 
-  const getParams = (pageNumber: number) => {
-    const params: any = {
+  const getParams = useCallback((pageNumber: number) => {
+    const params: NoteParam = {
       page: pageNumber,
       limit,
     };
@@ -51,7 +51,7 @@ const NoteItem: React.FC = () => {
     else if (selectedFolder?.id) params.folderId = selectedFolder.id;
 
     return params;
-  };
+  },[activeView,selectedFolder]);
 
   
   useEffect(() => {
@@ -90,10 +90,10 @@ const NoteItem: React.FC = () => {
     };
 
     fetchNotes();
-  }, [selectedFolder?.id, activeView, refreshNotes]);
+  }, [getParams, activeView,refreshNotes]);
 
   
-  const fetchNextPage = async () => {
+  const fetchNextPage = useCallback(async () => {
     if (loading || !hasMore) return;
 
     try {
@@ -128,7 +128,7 @@ const NoteItem: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  },[page,hasMore,loading,getParams,activeView]);
 
   
   useEffect(() => {
@@ -150,7 +150,7 @@ const NoteItem: React.FC = () => {
     return () => {
       if (current) observer.unobserve(current);
     };
-  }, [page, hasMore, loading]);
+  }, [fetchNextPage]);
 
   return (
     <div

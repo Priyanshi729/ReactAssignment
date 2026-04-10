@@ -56,7 +56,7 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
           type="text"
           placeholder="Enter title"
           style={{ fontFamily: "var(--font-primary)" }}
-          className="w-full text-(--add-bg) text-3xl font-semibold"
+          className="w-full text-(--add-bg) text-3xl font-semibold focus:outline-none focus:ring-0"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -81,7 +81,7 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
 
         <textarea
           placeholder="Write your note..."
-          className="w-full border p-2 mt-2 h-60 text-(--isActive-bg) text-base pt-5"
+          className="w-full border p-2 mt-2 h-60 text-(--isActive-bg) text-base pt-5 focus:outline-none focus:ring-0"
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />

@@ -22,7 +22,6 @@ const NotesDetail: React.FC = () => {
     activeView,
   } = useApp();
 
-
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { noteId } = useParams();
@@ -34,18 +33,16 @@ const NotesDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-      setMenu(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setSelectedNoteId(null);
@@ -61,7 +58,7 @@ const NotesDetail: React.FC = () => {
       setMode('view');
       setSelectedNoteId(noteId || null);
     }
-  }, [noteId]);
+  }, [noteId, setSelectedNoteId]);
 
   useEffect(() => {
     if (!selectedNoteId || mode === "create") return;
@@ -76,11 +73,6 @@ const NotesDetail: React.FC = () => {
         if (!res?.data?.note) throw new Error('Note not found');
 
         const note = res.data.note;
-
-        if (note.deletedAt && activeView !== "trash") {
-          setShowNote(null);
-          return;
-        }
 
         const normalized: FullNote = {
           ...note,
@@ -104,9 +96,9 @@ const NotesDetail: React.FC = () => {
     if (!showNote) return;
     try {
       setLoading(true);
-      await updateNote(showNote.id, { isArchived:!showNote.isArchived });
-      setShowNote((prev) => (prev ? { ...prev, isArchived: !prev.isArchived } : prev));
-      setRefreshNotes((prev) => !prev);
+      await updateNote(showNote.id, { isArchived: !showNote.isArchived });
+      setShowNote(prev => prev ? { ...prev, isArchived: !prev.isArchived } : prev);
+      setRefreshNotes(prev => !prev);
       setSelectedNoteId(null);
       navigate('/');
     } catch (err) {
@@ -122,8 +114,8 @@ const NotesDetail: React.FC = () => {
     try {
       setLoading(true);
       await updateNote(showNote.id, { isFavorite: !showNote.isFavorite });
-      setShowNote((prev) => (prev ? { ...prev, isFavorite: !prev.isFavorite } : prev));
-      setRefreshNotes((prev) => !prev);
+      setShowNote(prev => prev ? { ...prev, isFavorite: !prev.isFavorite } : prev);
+      setRefreshNotes(prev => !prev);
     } catch (err) {
       console.error(err);
       setError('Failed to update favorite');
@@ -137,16 +129,16 @@ const NotesDetail: React.FC = () => {
     try {
       setLoading(true);
       await deleteNote(showNote.id);
-      setSelectedNoteId(null);
-      setShowNote(null);
+      setShowNote(prev =>
+        prev
+          ? {
+              ...prev,
+              deletedAt: new Date().toISOString(),
+              content: "",
+            }
+          : prev
+      );
       setRefreshNotes(prev => !prev);
-      if (activeView === "trash") {
-      navigate("/trash"); 
-    } else if (activeView === "favorites") {
-      navigate("/fav");
-    } else {
-      navigate(`/folder/${showNote.folderId}`); 
-    } 
     } catch (err) {
       console.error(err);
       setError("Failed to delete note");
@@ -156,6 +148,7 @@ const NotesDetail: React.FC = () => {
   };
 
   if (mode === 'create') return <NoteForm />;
+
   if (!selectedNoteId)
     return (
       <div className="flex flex-col justify-center items-center pl-65">
@@ -164,11 +157,16 @@ const NotesDetail: React.FC = () => {
         <p className="text-(--text-bg)">Choose a note or create a new one.</p>
       </div>
     );
-  if (loading && !showNote) return <div className="p-10 text-white animate-pulse">Loading note...</div>;
-  if (error) return <div className="p-10 text-red-500">{error}</div>;
+
+  if (loading && !showNote)
+    return <div className="p-10 text-white animate-pulse">Loading note...</div>;
+
+  if (error)
+    return <div className="p-10 text-red-500">{error}</div>;
+
   if (!showNote) return null;
 
-  if (activeView === "trash" && showNote?.deletedAt) {
+  if (showNote?.deletedAt) {
     return (
       <div className="flex flex-col items-center justify-center h-full w-250 text-center">
         <div className="text-(--text-re) text-6xl mb-6">⟲</div>
@@ -204,7 +202,7 @@ const NotesDetail: React.FC = () => {
         <h2 className="text-(--add-bg) text-3xl">{showNote.title}</h2>
         <div className="relative" ref={menuRef}>
           <button
-            onClick={() => setMenu((prev) => !prev)}
+            onClick={() => setMenu(prev => !prev)}
             className="w-6 h-6 flex items-center justify-center rounded-full text-(--text-bg) border border-gray-500 hover:border-gray-300 hover:bg-white/5"
           >
             ⋯
@@ -258,10 +256,14 @@ const NotesDetail: React.FC = () => {
           <Folder className="h-4 w-4 text-(--content-bg)" />
           <p className="text-(--content-bg) text-sm">Folder</p>
         </div>
-        <p className="text-(--add-bg) text-sm ">{showNote.folderName || 'No Folder'}</p>
+        <p className="text-(--add-bg) text-sm ">
+          {showNote.folderName || 'No Folder'}
+        </p>
       </div>
 
-      <p className="text-(--isActive-bg) text-base pt-5 whitespace-pre-wrap">{showNote.content}</p>
+      <p className="text-(--isActive-bg) text-base pt-5 whitespace-pre-wrap">
+        {showNote.content}
+      </p>
     </div>
   );
 };

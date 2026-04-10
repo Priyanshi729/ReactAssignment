@@ -60,7 +60,7 @@ const Folder: React.FC = () => {
     };
 
     fetchFolders();
-  }, [refreshNotes]);
+  }, [refreshNotes,setFolders,setSelectedFolder,selectedFolder?.id]);
 
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return;

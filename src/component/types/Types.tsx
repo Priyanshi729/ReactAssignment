@@ -6,6 +6,10 @@ export type Note = {
 
   folderId: string;
   folderName?: string;   
+  folder?: {
+    id: string;
+    name: string;
+  };
 
   isFavorite?: boolean;  
   isArchived?: boolean;  
@@ -34,6 +38,14 @@ export type folder = {
   deletedAt?: string | null;
 };
 
+export type NoteParam = {
+  page : number;
+  limit : number;
+  favorite?: boolean;
+  archived?: boolean;
+  deleted? : deletedNote;
+  folderId?: string;
+}
 
 export type deletedNote = "true" | "false";
 
@@ -43,4 +55,5 @@ export type GetNotes = {
   archived?: boolean;
   deleted?: deletedNote;
   limit?: number;
+  search?:string;
 };

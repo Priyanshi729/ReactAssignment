@@ -45,7 +45,7 @@ export const deleteNote = async(id: string) => {
 
 
 export const restoreNote = async(id: string) => {
-  return await api.post(`/notes/${id}/restore`);
+  return await api.post(`/notes/${id}/restore`);
 };
 
 export const deleteFolder =  async(id:string)=>{

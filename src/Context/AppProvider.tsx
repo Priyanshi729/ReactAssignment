@@ -17,23 +17,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
 
   useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const res = await getFolders();
-        const data = res?.data?.folders ?? res?.data?.data ?? [];
-        const foldersArray = Array.isArray(data) ? data : [];
-        setFolders(foldersArray);
+  const fetchFolders = async () => {
+    try {
+      const res = await getFolders();
+      const data = res?.data?.folders ?? res?.data?.data ?? [];
+      const foldersArray = Array.isArray(data) ? data : [];
+      setFolders(foldersArray);
 
-        if (foldersArray.length > 0 && !selectedFolder) {
-          setSelectedFolder(foldersArray[0]);
+      setSelectedFolder(prev => {
+        if (!prev && foldersArray.length > 0) {
+          return foldersArray[0];
         }
-      } catch (err) {
-        console.error(err);
-        setFolders([]);
-      }
-    };
-    fetchFolders();
-  }, []);
+        return prev;
+      });
+
+    } catch (err) {
+      console.error(err);
+      setFolders([]);
+    }
+  };
+
+  fetchFolders();
+}, []);
 
   return (
     <AppContext.Provider

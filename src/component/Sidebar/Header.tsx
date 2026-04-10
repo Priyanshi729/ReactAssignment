@@ -2,7 +2,7 @@ import React from 'react'
 import Logo from '../../assets/Logo.svg'
 import { SearchIcon, Sun, Moon } from 'lucide-react'
 import { useApp } from '../../Context/useApp';
-import { useTheme } from '../../Context/themeContext';
+import { useTheme } from '../../Context/useTheme';
 
 
 const Header: React.FC = () => {
@@ -15,7 +15,7 @@ const Header: React.FC = () => {
         <div className='flex justify-between items-center pr-5 pl-6  h-9.5'>
             <img
                 src={Logo}
-                className={`w-25.25 h-9.5 filter ${theme === 'light' ? 'invert sepia hue-rotate-[200deg] saturate-[500%]' : ''
+                className={`w-25.25 h-9.5 filter ${theme === 'light' ? 'invert sepia hue-rotate-200 saturate-500' : ''
                     }`}
             />
             <div className='flex gap-4'>
