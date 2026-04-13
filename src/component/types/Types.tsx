@@ -25,6 +25,11 @@ export type FullNote = {
   folderId?: string;
   folderName?: string;  
 
+  folder?: {            
+    id: string;
+    name: string;
+  };
+
   isFavorite: boolean;  
   isArchived?: boolean;
   deletedAt? : string | null;
@@ -55,5 +60,40 @@ export type GetNotes = {
   archived?: boolean;
   deleted?: deletedNote;
   limit?: number;
+  page?: number;
   search?:string;
 };
+
+export type GetFoldersResponse = {
+  folders: folder[];
+};
+
+export type GetRecentResponse = {
+  notes: Note[];
+};
+
+export type CreateFolderResponse = {
+  folder: folder;
+};
+
+export type GetFullNoteResponse = {
+  note: FullNote;
+};
+
+export type GetNotesResponse = {
+  notes: Note[];
+};
+
+export type CreateNoteResponse = {
+  note: FullNote;
+};
+
+export type UpdateNoteResponse = {
+  note: FullNote;
+};
+
+export type MessageResponse = {
+  message: string;
+};
+
+ 

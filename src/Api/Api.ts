@@ -1,27 +1,30 @@
 import axios from "axios"
-import type {  GetNotes } from "../component/types/Types"
+import type {  CreateFolderResponse, CreateNoteResponse, GetFoldersResponse, GetFullNoteResponse, GetNotes, GetNotesResponse, GetRecentResponse, MessageResponse, UpdateNoteResponse } from "../component/types/Types"
 
 export const api=axios.create({
     baseURL:"https://nowted-server.remotestate.com"
 })
+
+
+
 export const getRecent=async()=>{
-    return await api.get('/notes/recent')
+    return await api.get<GetRecentResponse>('/notes/recent')
 }
 
 export const getFolders = async (params?: { deleted?: "true" | "false" }) => {
-  return await api.get('/folders', { params });
+  return await api.get<GetFoldersResponse>('/folders', { params });
 };
 
 export const createFolder=async (name:string)=>{
-    return await api.post('/folders',{name})
+    return await api.post<CreateFolderResponse>('/folders',{name})
 }
 
 export const getNotes = async (params: GetNotes) => {
-  return await api.get("/notes", { params });
+  return await api.get<GetNotesResponse>("/notes", { params });
 };
 
 export const getNotesData = async (NotesId: string) => {
-  return await api.get(`/notes/${NotesId}`);
+  return await api.get<GetFullNoteResponse>(`/notes/${NotesId}`);
 };
 
 export const createNote = async (data: {
@@ -29,37 +32,34 @@ export const createNote = async (data: {
   content: string;
   folderId: string;
 }) => {
-  return await api.post("/notes", data);
+  return await api.post<CreateNoteResponse>("/notes", data);
 };
 
-export const updateNote = async(
-  id: string,
-  data: { isFavorite?: boolean; isArchived?: boolean },
-) => {
-  return await api.patch(`/notes/${id}`, data);
-};
+export const updateNote = (id: string, data: {
+  title?: string;
+  content?: string;
+  isFavorite?: boolean;
+  isArchived?: boolean;
+}) => api.patch<UpdateNoteResponse>(`/notes/${id}`, data);
 
 export const deleteNote = async(id: string) => {
-  return await api.delete(`/notes/${id}`);
+  return await api.delete<MessageResponse>(`/notes/${id}`);
 };
 
 
 export const restoreNote = async(id: string) => {
-  return await api.post(`/notes/${id}/restore`);
+  return await api.post<UpdateNoteResponse>(`/notes/${id}/restore`);
 };
 
 export const deleteFolder =  async(id:string)=>{
-  return await api.delete(`/folders/${id}`)
+  return await api.delete<MessageResponse>(`/folders/${id}`)
 }
 
 
 export const updateFolder = async (id: string, data: { name: string }) => {
-  return await api.patch(`/folders/${id}`, data);
+  return await api.patch<CreateFolderResponse>(`/folders/${id}`, data);
 };
 
 export const restoreFolder = async (id: string) => {
-  return await api.post(`/folders/${id}/restore`);
+  return await api.post<CreateFolderResponse>(`/folders/${id}/restore`);
 };
-
-
-

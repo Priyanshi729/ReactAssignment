@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, FolderIcon } from "lucide-react";
 import { useApp } from "../../Context/useApp";
-import { createNote } from "../../Api/Api";
-import type { Note } from "../types/Types";
-import { useNavigate } from "react-router-dom";
+import { createNote, updateNote } from "../../Api/Api";
+import { useLocation } from "react-router";
 
 type Props = {
   onClose?: (createdNoteId?: string) => void;
@@ -11,61 +10,93 @@ type Props = {
 
 const NoteForm: React.FC<Props> = ({ onClose }) => {
   const { selectedFolder, setSelectedNoteId, setRefreshNotes } = useApp();
-  const navigate = useNavigate();
+  const location = useLocation();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const currentDate = new Date().toLocaleDateString("en-GB");
 
-  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFirstChange = async () => {
+    const folderId =
+      selectedFolder?.id || location.pathname.split("/")[2];
 
-    if (!selectedFolder?.id) {
-      alert("Please select a folder before creating a note.");
-      return;
-    }
+    if (createdNoteId || !folderId) return;
+
+    setCreatedNoteId("creating");
 
     try {
       const res = await createNote({
-        folderId: selectedFolder.id,
-        title: title || "Untitled Note",
-        content: content || "Start writing...",
+        folderId: folderId,
+        title: "Untitled Note",
+        content: "",
       });
 
-      const newNote: Note | undefined = res?.data?.note || res?.data;
-      if (!newNote || !newNote.id) {
-        throw new Error("API did not return a valid note object");
-      }
+      const newNote = res?.data?.note || res?.data;
+      if (!newNote?.id) return;
 
-     
-      setSelectedNoteId(null);
-      setRefreshNotes((prev) => !prev); 
-      navigate('/');
+      setCreatedNoteId(newNote.id);
+      setSelectedNoteId(newNote.id);
+      setRefreshNotes((prev) => !prev);
+
       onClose?.(newNote.id);
     } catch (err) {
-      console.error("Failed to create note:", err);
-      alert("Failed to create note. Check console for details.");
+      console.error(err);
+      setCreatedNoteId(null);
     }
   };
 
+  useEffect(() => {
+    if (!createdNoteId) return;
+
+    setIsSaving(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        await updateNote(createdNoteId, {
+          title: title || "Untitled Note",
+          content: content || "Start writing...",
+        });
+
+        setRefreshNotes((prev) => !prev);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSaving(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [title, content, createdNoteId, setRefreshNotes]);
+
   return (
     <div className="h-full w-250 px-8 py-5 overflow-y-auto">
-      <form onSubmit={handleSubmit} className="p-6">
+      <div className="p-6">
         <input
           type="text"
           placeholder="Enter title"
           style={{ fontFamily: "var(--font-primary)" }}
           className="w-full text-(--add-bg) text-3xl font-semibold focus:outline-none focus:ring-0"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            handleFirstChange();
+          }}
         />
 
-        <div className="flex items-center gap-25 mt-8 pb-2">
+        <div className="flex items-center justify-between mt-8 pb-2">
           <div className="flex items-center gap-4">
             <Calendar className="h-4 w-4 text-(--content-bg)" />
-            <p className="text-(--content-bg) text-sm pl-2 ">{currentDate}</p>
+            <p className="text-(--content-bg) text-sm pl-2">
+              {currentDate}
+            </p>
           </div>
+
+          <p className="text-(--content-bg) text-xs pr-2">
+            {createdNoteId ? (isSaving ? "Saving..." : "Saved") : ""}
+          </p>
         </div>
 
         <hr className="text-(--note-a-bg) w-250 h-px" />
@@ -73,7 +104,7 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
         <div className="flex gap-20 pt-2">
           <div className="flex gap-4">
             <FolderIcon className="text-(--content-bg) h-5" />
-            <p className="text-(--content-bg) text-sm ">
+            <p className="text-(--content-bg) text-sm">
               {selectedFolder?.name || "No Folder"}
             </p>
           </div>
@@ -81,15 +112,14 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
 
         <textarea
           placeholder="Write your note..."
-          className="w-full border p-2 mt-2 h-60 text-(--isActive-bg) text-base pt-5 focus:outline-none focus:ring-0"
+          className="w-full p-2 mt-2 h-60 text-(--isActive-bg) text-base pt-5 focus:outline-none focus:ring-0"
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => {
+            setContent(e.target.value);
+            handleFirstChange();
+          }}
         />
-
-        <button type="submit" className="mt-3 px-4 py-2 bg-(--submit-bg) text-white">
-          + Add Note
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

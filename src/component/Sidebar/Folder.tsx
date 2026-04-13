@@ -31,6 +31,7 @@ const Folder: React.FC = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editedName, setEditedName] = useState("");
+  const [newlyCreatedFolderName, setNewlyCreatedFolderName] = useState<string | null>(null);
 
   const safeFolders = Array.isArray(folders) ? folders : [];
   const navigate = useNavigate();
@@ -50,7 +51,24 @@ const Folder: React.FC = () => {
 
         setFolders(normalized);
 
-        if (normalized.length > 0 && !selectedFolder?.id) {
+        
+        if (newlyCreatedFolderName) {
+          const created = normalized.find(
+            (f) => f.name === newlyCreatedFolderName
+          );
+
+          if (created) {
+            setSelectedFolder(created);
+            navigate(`/folder/${created.id}`);
+            setNewlyCreatedFolderName(null);
+            return;
+          }
+        }
+        if (
+          normalized.length > 0 &&
+          (!selectedFolder ||
+            !normalized.find((f) => f.id === selectedFolder.id))
+        ) {
           setSelectedFolder(normalized[0]);
         }
       } catch (err) {
@@ -60,25 +78,18 @@ const Folder: React.FC = () => {
     };
 
     fetchFolders();
-  }, [refreshNotes,setFolders,setSelectedFolder,selectedFolder?.id]);
+  }, [refreshNotes, setFolders, setSelectedFolder, selectedFolder?.id]);
 
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return;
 
     try {
-      const res = await apiCreateFolder(newFolderName);
-      const rawFolder = res?.data?.folder || res?.data;
+      await apiCreateFolder(newFolderName);
 
-      const newFolder = {
-        id: String(rawFolder?.id ?? Date.now()),
-        name: rawFolder?.name ?? newFolderName,
-        deletedAt: null,
-      };
-
-      setFolders((prev) => [newFolder, ...(prev || [])]);
-      setSelectedFolder(newFolder);
+      setNewlyCreatedFolderName(newFolderName);
+      setRefreshNotes((prev) => !prev);
       setSelectedNoteId(null);
-      navigate(`/folder/${newFolder.id}`);
+      // navigate(`/folder/${newFolder.id}`);
       setNewFolderName("");
       setShowInput(false);
     } catch (err) {
@@ -155,11 +166,10 @@ const Folder: React.FC = () => {
         return (
           <div
             key={item.id}
-            className={`flex items-center justify-between px-3 py-2 cursor-pointer transition ${
-              isActive
+            className={`flex items-center justify-between px-3 py-2 cursor-pointer transition ${isActive
                 ? "text-(--isActive-bg) bg-(--bg-Active)"
                 : "text-(--text-bg) hover:bg-(--hover-bg)"
-            }`}
+              }`}
           >
             <div
               onClick={() => {
@@ -172,9 +182,8 @@ const Folder: React.FC = () => {
               className="flex items-center gap-3 w-full"
             >
               <Icon
-                className={`w-5 h-5 ${
-                  isActive ? "text-(--isActive-bg)" : "text-(--text-bg)"
-                }`}
+                className={`w-5 h-5 ${isActive ? "text-(--isActive-bg)" : "text-(--text-bg)"
+                  }`}
               />
 
               {editingFolderId === item.id ? (
@@ -191,9 +200,8 @@ const Folder: React.FC = () => {
                 />
               ) : (
                 <p
-                  className={`text-base font-semibold ${
-                    isActive ? "text-(--isActive-bg)" : "text-(--text-bg)"
-                  }`}
+                  className={`text-base font-semibold ${isActive ? "text-(--isActive-bg)" : "text-(--text-bg)"
+                    }`}
                 >
                   {item.name}
                 </p>
