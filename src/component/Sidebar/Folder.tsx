@@ -78,7 +78,7 @@ const Folder: React.FC = () => {
     };
 
     fetchFolders();
-  }, [refreshNotes, setFolders, setSelectedFolder, selectedFolder?.id]);
+  }, [refreshNotes, setFolders, setSelectedFolder, selectedFolder?.id,navigate,newlyCreatedFolderName,selectedFolder]);
 
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return;

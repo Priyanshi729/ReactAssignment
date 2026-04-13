@@ -66,10 +66,13 @@ export type GetNotes = {
 
 export type GetFoldersResponse = {
   folders: folder[];
+  data?: folder[];
 };
 
 export type GetRecentResponse = {
   notes: Note[];
+  data?:Note[];
+  recentNotes?: Note[];
 };
 
 export type CreateFolderResponse = {
@@ -82,6 +85,7 @@ export type GetFullNoteResponse = {
 
 export type GetNotesResponse = {
   notes: Note[];
+  data?:Note[];
 };
 
 export type CreateNoteResponse = {
