@@ -10,8 +10,11 @@ const App: React.FC = () => {
       <Route path="/" element={<SideLayout />}>
         <Route index element={<Navigate to="/favorites" />} />
         <Route path="favorites" element={<NotesDetail />} />
+        <Route path="favorites/:folderId/:noteId" element={<NotesDetail />} />
         <Route path="archived" element={<NotesDetail />} />
+        <Route path="archived/:folderId/:noteId" element={<NotesDetail />} />
         <Route path="trash" element={<NotesDetail />} />
+        <Route path="trash/:folderId/:noteId" element={<NotesDetail />} />
         <Route path="folder/:folderId" element={<NotesDetail />} />
         <Route path="folder/:folderId/note/:noteId" element={<NotesDetail />} />
         <Route path="note/:noteId" element={<NotesDetail />} />

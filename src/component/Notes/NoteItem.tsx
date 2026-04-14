@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import type { Note, NoteParam } from "../types/Types";
 import { getNotes } from "../../Api/Api";
 import { formatDate, getPreview } from "../utilis/helper";
 import { useApp } from "../../Context/useApp";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 type NotesResponse = {
   notes?: Note[];
@@ -30,11 +30,25 @@ const NoteItem: React.FC = () => {
   } = useApp();
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentView = useMemo(() => {
+    if (activeView) return activeView;
+    if (location.pathname.startsWith("/favorites")) return "favorites";
+    if (location.pathname.startsWith("/archived")) return "archived";
+    if (location.pathname.startsWith("/trash")) return "trash";
+    return null;
+  }, [activeView, location.pathname]);
+
+  const shouldFetch = useMemo(
+    () => currentView !== null || Boolean(selectedFolder?.id),
+    [currentView, selectedFolder?.id]
+  );
 
   const getTitle = () => {
-    if (activeView === "favorites") return "Favorites";
-    if (activeView === "archived") return "Archived";
-    if (activeView === "trash") return "Trash";
+    if (currentView === "favorites") return "Favorites";
+    if (currentView === "archived") return "Archived";
+    if (currentView === "trash") return "Trash";
     if (selectedFolder) return selectedFolder.name;
     
   };
@@ -45,17 +59,19 @@ const NoteItem: React.FC = () => {
       limit,
     };
 
-    if (activeView === "favorites") params.favorite = true;
-    else if (activeView === "archived") params.archived = true;
-    else if (activeView === "trash") params.deleted = "true";
+    if (currentView === "favorites") params.favorite = true;
+    else if (currentView === "archived") params.archived = true;
+    else if (currentView === "trash") params.deleted = "true";
     else if (selectedFolder?.id) params.folderId = selectedFolder.id;
 
     return params;
-  },[activeView,selectedFolder]);
+  },[currentView,selectedFolder]);
 
   
   useEffect(() => {
     const fetchNotes = async () => {
+      if (!shouldFetch) return;
+
       try {
         setLoading(true);
         setNotes([]);
@@ -69,7 +85,7 @@ const NoteItem: React.FC = () => {
           : raw?.notes ?? raw?.data ?? [];
 
         const safeData =
-          activeView === "trash"
+          currentView === "trash"
             ? data.filter(n => n.deletedAt !== null)
             : data.filter(n => n.deletedAt === null);
 
@@ -90,11 +106,11 @@ const NoteItem: React.FC = () => {
     };
 
     fetchNotes();
-  }, [getParams, activeView,refreshNotes]);
+  }, [getParams, refreshNotes, shouldFetch]);
 
   
   const fetchNextPage = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || !shouldFetch) return;
 
     try {
       setLoading(true);
@@ -110,7 +126,7 @@ const NoteItem: React.FC = () => {
         : raw?.notes ?? raw?.data ?? [];
 
       const safeData =
-        activeView === "trash"
+        currentView === "trash"
           ? data.filter(n => n.deletedAt !== null)
           : data.filter(n => n.deletedAt === null);
 
@@ -128,7 +144,7 @@ const NoteItem: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  },[page,hasMore,loading,getParams,activeView]);
+  },[page,hasMore,loading,getParams,shouldFetch]);
 
   
   useEffect(() => {
@@ -152,6 +168,17 @@ const NoteItem: React.FC = () => {
     };
   }, [fetchNextPage]);
 
+  const sortedNotes = useMemo(() => {
+  if (currentView === "trash") {
+    return [...notes].sort(
+      (a, b) =>
+        new Date(b.deletedAt || 0).getTime() -
+        new Date(a.deletedAt || 0).getTime()
+    );
+  }
+  return notes;
+}, [notes, currentView]);
+
   return (
     <div
       ref={containerRef}
@@ -164,12 +191,18 @@ const NoteItem: React.FC = () => {
       
 
       <div className="flex flex-col gap-4">
-        {notes.map((note) => (
+        {sortedNotes.map((note) => (
           <div
             key={note.id}
             onClick={() => {
               setSelectedNoteId(note.id);
-              if (selectedFolder) {
+              if (currentView === "favorites") {
+                navigate(`/favorites/${note.folderId}/${note.id}`);
+              } else if (currentView === "archived") {
+                navigate(`/archived/${note.folderId}/${note.id}`);
+              } else if (currentView === "trash") {
+                navigate(`/trash/${note.folderId}/${note.id}`);
+              } else if (selectedFolder) {
                 navigate(`/folder/${selectedFolder.id}/note/${note.id}`);
               } else {
                 navigate(`/note/${note.id}`);

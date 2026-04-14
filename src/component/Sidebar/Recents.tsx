@@ -14,7 +14,8 @@ const Recents: React.FC = () => {
         folders,
         setSelectedFolder,
         setSelectedNoteId,
-        selectedNoteId
+        selectedNoteId,
+        setActiveView
     } = useApp();
 
     const navigate = useNavigate();
@@ -68,7 +69,8 @@ const Recents: React.FC = () => {
             id: note.folderId,
             name: folderName,
         });
-        navigate(`/note/${note.id}`);
+        setActiveView(null);
+        navigate(`/folder/${note.folderId}/note/${note.id}`);
     };
 
     return (

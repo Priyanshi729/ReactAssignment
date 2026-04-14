@@ -23,7 +23,6 @@ const NotesDetail: React.FC = () => {
     selectedNoteId,
     setRefreshNotes,
     setSelectedNoteId,
-    selectedFolder,
   } = useApp();
 
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -59,7 +58,7 @@ const NotesDetail: React.FC = () => {
     setShowNote(null);
     setTitle("");
     setContent("");
-  }, [selectedFolder?.id, location.pathname, setSelectedNoteId]);
+  }, [location.pathname, setSelectedNoteId]);
 
   useEffect(() => {
     if (noteId === "new") {
@@ -149,15 +148,9 @@ const NotesDetail: React.FC = () => {
 
     await deleteNote(showNote.id);
 
-    setShowNote((prev) =>
-      prev
-        ? {
-          ...prev,
-          deletedAt: new Date().toISOString(),
-          content: "",
-        }
-        : prev
-    );
+    const res = await getNotesData(showNote.id);
+
+    setShowNote(res.data.note);
 
     setRefreshNotes((p) => !p);
   };
@@ -196,6 +189,10 @@ const NotesDetail: React.FC = () => {
         <button
           onClick={async () => {
             await restoreNote(showNote.id);
+            const res = await getNotesData(showNote.id);
+
+            setShowNote(res.data.note);
+
             setRefreshNotes((p) => !p);
             setSelectedNoteId(null);
             navigate("/");
@@ -272,7 +269,7 @@ const NotesDetail: React.FC = () => {
         </p>
       </div>
 
-      <hr className="w-full" />
+      <hr className="w-full text-(--note-a-bg)" />
 
       <div className="flex gap-20 pt-2">
         <div className="flex gap-2">

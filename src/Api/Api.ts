@@ -1,8 +1,8 @@
 import axios from "axios"
 import type {  CreateFolderResponse, CreateNoteResponse, GetFoldersResponse, GetFullNoteResponse, GetNotes, GetNotesResponse, GetRecentResponse, MessageResponse, UpdateNoteResponse } from "../component/types/Types"
 
-export const api=axios.create({
-    baseURL:"https://nowted-server.remotestate.com"
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL
 })
 
 

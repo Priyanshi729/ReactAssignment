@@ -32,4 +32,4 @@ const SideLayout: React.FC = () => {
     )
 }
 
-export default SideLayout
+export default SideLayout;
