@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Folder as FolderIcon,
   FolderPlus,
@@ -14,6 +14,7 @@ import {
   updateFolder,
 } from "../../Api/Api";
 import { useNavigate } from "react-router";
+import toast from "react-hot-toast";
 
 const Folder: React.FC = () => {
   const {
@@ -32,6 +33,7 @@ const Folder: React.FC = () => {
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editedName, setEditedName] = useState("");
   const [newlyCreatedFolderName, setNewlyCreatedFolderName] = useState<string | null>(null);
+  const inputRef = useRef<HTMLDivElement | null>(null);
 
   const safeFolders = Array.isArray(folders) ? folders : [];
   const navigate = useNavigate();
@@ -58,6 +60,7 @@ const Folder: React.FC = () => {
           );
 
           if (created) {
+            setActiveView(null);
             setSelectedFolder(created);
             navigate(`/folder/${created.id}`);
             setNewlyCreatedFolderName(null);
@@ -80,6 +83,25 @@ const Folder: React.FC = () => {
     fetchFolders();
   }, [refreshNotes, setFolders, setSelectedFolder, selectedFolder?.id,navigate,newlyCreatedFolderName,selectedFolder]);
 
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      inputRef.current &&
+      !inputRef.current.contains(event.target as Node)
+    ) {
+      setShowInput(false);
+    }
+  };
+
+  if (showInput) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showInput]);
+
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return;
 
@@ -87,9 +109,9 @@ const Folder: React.FC = () => {
       await apiCreateFolder(newFolderName);
 
       setNewlyCreatedFolderName(newFolderName);
+      toast.success("Folder created successfully");
       setRefreshNotes((prev) => !prev);
       setSelectedNoteId(null);
-      // navigate(`/folder/${newFolder.id}`);
       setNewFolderName("");
       setShowInput(false);
     } catch (err) {
@@ -102,6 +124,7 @@ const Folder: React.FC = () => {
       await deleteFolder(id);
       setSelectedFolder(null);
       setSelectedNoteId(null);
+      toast.success("Folder moved to trash");
       setRefreshNotes((prev) => !prev);
       navigate("/");
     } catch (err) {
@@ -141,7 +164,7 @@ const Folder: React.FC = () => {
       </div>
 
       {showInput && (
-        <div className="py-3">
+        <div  ref={inputRef} className="py-3">
           <input
             type="text"
             autoFocus

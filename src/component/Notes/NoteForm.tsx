@@ -10,6 +10,7 @@ import {
 } from "../../Api/Api";
 import { useLocation, useNavigate } from "react-router";
 import type { FullNote } from "../types/Types";
+import toast from "react-hot-toast";
 
 type Props = {
   onClose?: (createdNoteId?: string) => void;
@@ -19,18 +20,21 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
   const { selectedFolder, setSelectedNoteId, setRefreshNotes } = useApp();
   const location = useLocation();
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
+ 
 
  
-  const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const [showNote, setShowNote] = useState<FullNote | null>(null);
   const [menu, setMenu] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const navigate = useNavigate();
+  const folderId = location.pathname.split("/")[2];
 
   const currentDate = new Date().toLocaleDateString("en-GB");
+
+  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -103,6 +107,9 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
     });
 
     setShowNote({ ...showNote, isFavorite: !showNote.isFavorite });
+    toast.success(
+    showNote.isFavorite ?  "Removed from favorites" : "Added to favorites" 
+  );
     setRefreshNotes((p) => !p);
   };
 
@@ -114,8 +121,11 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
     });
 
     setShowNote({ ...showNote, isArchived: !showNote.isArchived });
+    toast.success(
+      showNote.isArchived ?  "Note Unarchived" : "Note archived " )
     setRefreshNotes((p) => !p);
-    navigate("/");
+    navigate(`/folder/${folderId}`, { replace: true });
+    setSelectedNoteId(null);
   };
 
   const handleDelete = async () => {
@@ -126,6 +136,7 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
     const res = await getNotesData(showNote.id); 
 
   setShowNote(res.data.note);
+  toast.success("Moved to trash");
 
   setRefreshNotes((p) => !p);
   };
@@ -136,9 +147,10 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
     await restoreNote(showNote.id);
     const res = await getNotesData(showNote.id);
     setShowNote(res.data.note)
+     toast.success("Note restored ");
     setRefreshNotes((p) => !p);
     setSelectedNoteId(null);
-    navigate("/");
+   
   };
 
   if (showNote?.deletedAt) {
@@ -171,7 +183,6 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
-              if (!hasStartedTyping) setHasStartedTyping(true);
               handleFirstChange();
             }}
           />
@@ -238,7 +249,7 @@ const NoteForm: React.FC<Props> = ({ onClose }) => {
           value={content}
           onChange={(e) => {
             setContent(e.target.value);
-            if (!hasStartedTyping) setHasStartedTyping(true);
+            
             handleFirstChange();
           }}
         />

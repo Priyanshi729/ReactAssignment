@@ -7,15 +7,14 @@ import { useNavigate } from "react-router-dom";
 
 const Recents: React.FC = () => {
     const [notes, setNotes] = useState<Note[]>([]);
-    const [editId, setEditId] = useState<string | null>(null);
-    const [editTitle, setEditTitle] = useState("");
 
     const {
         folders,
         setSelectedFolder,
         setSelectedNoteId,
         selectedNoteId,
-        setActiveView
+        setActiveView,
+        refreshNotes,
     } = useApp();
 
     const navigate = useNavigate();
@@ -37,25 +36,7 @@ const Recents: React.FC = () => {
             }
         };
         fetchRecent();
-    }, []);
-
-    const handleUpdateNote = async (id: string) => {
-        if (!editTitle.trim()) {
-            setEditId(null);
-            return;
-        }
-        try {
-            setNotes((prev) =>
-                prev.map((note) =>
-                    note.id === id ? { ...note, title: editTitle } : note
-                )
-            );
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setEditId(null);
-        }
-    };
+    }, [refreshNotes]);
 
     const getFolderName = (folderId: string) => {
         const folder = folders.find((f: folder) => f.id === folderId);
@@ -76,7 +57,7 @@ const Recents: React.FC = () => {
     return (
         <div
             style={{ fontFamily: "var(--font-primary)" }}
-            className="w-80 h-39.5 pl-6 pt-2"
+            className="w-80 h-39.5 pl-6 pt-2  "
         >
             <p className="text-(--text-bg) font-semibold text-sm">
                 Recents
@@ -90,7 +71,6 @@ const Recents: React.FC = () => {
 
             {notes?.map((note) => {
                 const isActive = selectedNoteId === note.id;
-                const isEditing = editId === note.id;
 
                 return (
                     <div
@@ -104,39 +84,15 @@ const Recents: React.FC = () => {
                     >
                         <FileText className="w-5 h-5 text(--text-bg)" />
 
-                        {isEditing ? (
-                            <input
-                                value={editTitle}
-                                autoFocus
-                                onChange={(e) =>
-                                    setEditTitle(e.target.value)
-                                }
-                                onBlur={() =>
-                                    handleUpdateNote(note.id)
-                                }
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter")
-                                        handleUpdateNote(note.id);
-                                    if (e.key === "Escape")
-                                        setEditId(null);
-                                }}
-                                className="bg-(--sidebar-bg) text-base px-1 rounded outline-none text-white"
-                            />
-                        ) : (
-                            <p
-                                onDoubleClick={() => {
-                                    setEditId(note.id);
-                                    setEditTitle(note.title);
-                                }}
-                                className={`text-base font-semibold ${
-                                    isActive
-                                        ? "text-(--isActive-bg)"
-                                        : " text-(--text-bg)"
-                                }`}
-                            >
-                                {note.title}
-                            </p>
-                        )}
+                        <p
+                            className={`text-base font-semibold ${
+                                isActive
+                                    ? "text-(--isActive-bg)"
+                                    : " text-(--text-bg)"
+                            }`}
+                        >
+                            {note.title}
+                        </p>
                     </div>
                 );
             })}

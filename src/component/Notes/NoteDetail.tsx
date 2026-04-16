@@ -16,7 +16,8 @@ import {
 } from "../../Api/Api";
 import { useApp } from "../../Context/useApp";
 import NoteForm from "./NoteForm";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const NotesDetail: React.FC = () => {
   const {
@@ -26,7 +27,6 @@ const NotesDetail: React.FC = () => {
   } = useApp();
 
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
   const { noteId } = useParams();
   const location = useLocation();
 
@@ -125,8 +125,11 @@ const NotesDetail: React.FC = () => {
       prev ? { ...prev, isArchived: !prev.isArchived } : prev
     );
 
+    toast.success(
+      showNote.isArchived ?  "Note Unarchived" : "Note archived " )
+
     setRefreshNotes((p) => !p);
-    navigate("/");
+    setSelectedNoteId(null);
   };
 
   const handleFavorite = async () => {
@@ -140,7 +143,14 @@ const NotesDetail: React.FC = () => {
       prev ? { ...prev, isFavorite: !prev.isFavorite } : prev
     );
 
+    toast.success(
+    showNote.isFavorite ?  "Removed from favorites" : "Added to favorites " 
+  );
+
     setRefreshNotes((p) => !p);
+   if(showNote.isFavorite){
+    setSelectedNoteId(null);
+   }
   };
 
   const handleDelete = async () => {
@@ -152,6 +162,7 @@ const NotesDetail: React.FC = () => {
 
     setShowNote(res.data.note);
 
+    toast.success("Moved to trash");
     setRefreshNotes((p) => !p);
   };
 
@@ -193,9 +204,9 @@ const NotesDetail: React.FC = () => {
 
             setShowNote(res.data.note);
 
+             toast.success("Note restored ");
             setRefreshNotes((p) => !p);
             setSelectedNoteId(null);
-            navigate("/");
           }}
           className="px-6 py-3 bg-(--submit-bg) text-white rounded-lg"
         >
@@ -294,4 +305,4 @@ const NotesDetail: React.FC = () => {
   );
 };
 
-export default NotesDetail;
+export default NotesDetail;  

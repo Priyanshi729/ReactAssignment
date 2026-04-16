@@ -3,7 +3,7 @@ import type { Note, NoteParam } from "../types/Types";
 import { getNotes } from "../../Api/Api";
 import { formatDate, getPreview } from "../utilis/helper";
 import { useApp } from "../../Context/useApp";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate , useLocation} from "react-router-dom";
 
 type NotesResponse = {
   notes?: Note[];
@@ -27,47 +27,52 @@ const NoteItem: React.FC = () => {
     activeView,
     refreshNotes,
     selectedNoteId,
+    setActiveView,
   } = useApp();
 
-  const navigate = useNavigate();
+
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const currentView = useMemo(() => {
-    if (activeView) return activeView;
-    if (location.pathname.startsWith("/favorites")) return "favorites";
-    if (location.pathname.startsWith("/archived")) return "archived";
-    if (location.pathname.startsWith("/trash")) return "trash";
-    return null;
-  }, [activeView, location.pathname]);
+  const currentView = activeView;
 
-  const shouldFetch = useMemo(
-    () => currentView !== null || Boolean(selectedFolder?.id),
-    [currentView, selectedFolder?.id]
-  );
+  useEffect(() => {
+    setNotes([]);
+    setPage(1);
+    setHasMore(true);
+  }, [currentView, selectedFolder?.id]);
+
+  const shouldFetch = Boolean(currentView || selectedFolder?.id);
 
   const getTitle = () => {
     if (currentView === "favorites") return "Favorites";
     if (currentView === "archived") return "Archived";
     if (currentView === "trash") return "Trash";
     if (selectedFolder) return selectedFolder.name;
-    
   };
 
-  const getParams = useCallback((pageNumber: number) => {
-    const params: NoteParam = {
-      page: pageNumber,
-      limit,
-    };
+  const getParams = useCallback(
+    (pageNumber: number) => {
+      const params: NoteParam = {
+        page: pageNumber,
+        limit,
+      };
 
-    if (currentView === "favorites") params.favorite = true;
-    else if (currentView === "archived") params.archived = true;
-    else if (currentView === "trash") params.deleted = "true";
-    else if (selectedFolder?.id) params.folderId = selectedFolder.id;
+      if (selectedFolder?.id && !currentView) {
+        params.folderId = selectedFolder.id;
+      } else if (currentView === "favorites") {
+        params.favorite = true;
+      } else if (currentView === "archived") {
+        params.archived = true;
+      } else if (currentView === "trash") {
+        params.deleted = "true";
+      }
 
-    return params;
-  },[currentView,selectedFolder]);
+      return params;
+    },
+    [currentView, selectedFolder]
+  );
 
-  
   useEffect(() => {
     const fetchNotes = async () => {
       if (!shouldFetch) return;
@@ -86,10 +91,10 @@ const NoteItem: React.FC = () => {
 
         const safeData =
           currentView === "trash"
-            ? data.filter(n => n.deletedAt !== null)
-            : data.filter(n => n.deletedAt === null);
+            ? data.filter((n) => n.deletedAt !== null)
+            : data.filter((n) => n.deletedAt === null);
 
-        const updated = safeData.map(n => ({
+        const updated = safeData.map((n) => ({
           ...n,
           preview: getPreview(n.preview),
         }));
@@ -97,7 +102,6 @@ const NoteItem: React.FC = () => {
         setNotes(updated);
         setPage(1);
         setHasMore(updated.length === limit);
-
       } catch {
         setNotes([]);
       } finally {
@@ -108,7 +112,19 @@ const NoteItem: React.FC = () => {
     fetchNotes();
   }, [getParams, refreshNotes, shouldFetch]);
 
-  
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/favorites")) {
+      setActiveView("favorites");
+    } else if (location.pathname.startsWith("/archived")) {
+      setActiveView("archived");
+    } else if (location.pathname.startsWith("/trash")) {
+      setActiveView("trash");
+    } else {
+      setActiveView(null);
+    }
+  }, [location.pathname]);
+
   const fetchNextPage = useCallback(async () => {
     if (loading || !hasMore || !shouldFetch) return;
 
@@ -127,26 +143,24 @@ const NoteItem: React.FC = () => {
 
       const safeData =
         currentView === "trash"
-          ? data.filter(n => n.deletedAt !== null)
-          : data.filter(n => n.deletedAt === null);
+          ? data.filter((n) => n.deletedAt !== null)
+          : data.filter((n) => n.deletedAt === null);
 
-      const updated = safeData.map(n => ({
+      const updated = safeData.map((n) => ({
         ...n,
         preview: getPreview(n.preview),
       }));
 
-      setNotes(prev => [...prev, ...updated]);
+      setNotes((prev) => [...prev, ...updated]);
       setPage(nextPage);
       setHasMore(updated.length === limit);
-
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  },[page,hasMore,loading,getParams,shouldFetch]);
+  }, [page, hasMore, loading, getParams, shouldFetch]);
 
-  
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -155,7 +169,7 @@ const NoteItem: React.FC = () => {
         }
       },
       {
-        root: containerRef.current, 
+        root: containerRef.current,
         rootMargin: "100px",
       }
     );
@@ -169,26 +183,24 @@ const NoteItem: React.FC = () => {
   }, [fetchNextPage]);
 
   const sortedNotes = useMemo(() => {
-  if (currentView === "trash") {
-    return [...notes].sort(
-      (a, b) =>
-        new Date(b.deletedAt || 0).getTime() -
-        new Date(a.deletedAt || 0).getTime()
-    );
-  }
-  return notes;
-}, [notes, currentView]);
+    if (currentView === "trash") {
+      return [...notes].sort(
+        (a, b) =>
+          new Date(b.deletedAt || 0).getTime() -
+          new Date(a.deletedAt || 0).getTime()
+      );
+    }
+    return notes;
+  }, [notes, currentView]);
 
   return (
     <div
       ref={containerRef}
-      className="w-89 h-screen overflow-y-auto overflow-x-hidden bg-(--middle-bg) px-4 pt-7 pb-4"
+      className="w-95 h-screen overflow-y-auto overflow-x-hidden bg-(--middle-bg) px-4 pt-7 pb-4"
     >
       <p className="text-lg font-semibold text-(--isActive-bg) pt-2 py-6">
         {getTitle()}
       </p>
-
-      
 
       <div className="flex flex-col gap-4">
         {sortedNotes.map((note) => (
@@ -196,6 +208,7 @@ const NoteItem: React.FC = () => {
             key={note.id}
             onClick={() => {
               setSelectedNoteId(note.id);
+
               if (currentView === "favorites") {
                 navigate(`/favorites/${note.folderId}/${note.id}`);
               } else if (currentView === "archived") {
@@ -208,15 +221,15 @@ const NoteItem: React.FC = () => {
                 navigate(`/note/${note.id}`);
               }
             }}
-            className={`flex flex-col gap-2.5 p-4 rounded-lg cursor-pointer ${
-              selectedNoteId === note.id
+            className={`flex flex-col gap-2.5 p-4 rounded-lg cursor-pointer ${selectedNoteId === note.id
                 ? "bg-(--note-a-bg)"
                 : "bg-(--bg-mid) hover:bg-(--hover-bg)"
-            }`}
+              }`}
           >
             <p className="font-semibold text-lg text-(--isActive-bg)">
               {note.title}
             </p>
+
             <div className="flex gap-4">
               <p className="text-base text-(--date-bg)">
                 {formatDate(note.createdAt)}
@@ -229,19 +242,13 @@ const NoteItem: React.FC = () => {
         ))}
       </div>
 
-     
-      {loading && (
-        <p className="text-(--text-bg) p-2">Loading more...</p>
-      )}
+      {loading && <p className="text-(--text-bg) p-2">Loading more...</p>}
 
-      
       <div ref={observerRef} className="h-10" />
 
-      {!hasMore && (
-        <p className="text-(--text-bg) p-2">No more notes</p>
-      )}
+      {!hasMore && <p className="text-(--text-bg) p-2">No more notes</p>}
     </div>
   );
 };
 
-export default NoteItem;
+export default NoteItem; 
